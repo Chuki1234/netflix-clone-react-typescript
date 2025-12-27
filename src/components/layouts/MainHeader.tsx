@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -11,14 +12,16 @@ import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import useOffSetTop from "src/hooks/useOffSetTop";
-import { APP_BAR_HEIGHT } from "src/constant";
+import { APP_BAR_HEIGHT, MAIN_PATH } from "src/constant";
 import Logo from "../Logo";
 import SearchBox from "../SearchBox";
 import NetflixNavigationLink from "../NetflixNavigationLink";
-
-const pages = ["My List", "Movies", "Tv Shows"];
+import { useAppDispatch } from "src/hooks/redux";
+import { logout } from "src/store/slices/authSlice";
 
 const MainHeader = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const isOffset = useOffSetTop(APP_BAR_HEIGHT);
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
@@ -41,6 +44,17 @@ const MainHeader = () => {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const handleAccount = () => {
+    handleCloseUserMenu();
+    navigate(`/${MAIN_PATH.account}`);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    handleCloseUserMenu();
+    navigate("/");
   };
 
   return (
@@ -90,11 +104,21 @@ const MainHeader = () => {
               display: { xs: "block", md: "none" },
             }}
           >
-            {pages.map((page) => (
-              <MenuItem key={page} onClick={handleCloseNavMenu}>
-                <Typography textAlign="center">{page}</Typography>
-              </MenuItem>
-            ))}
+            <MenuItem onClick={handleCloseNavMenu}>
+              <NetflixNavigationLink to="/my-list" variant="body1">
+                My List
+              </NetflixNavigationLink>
+            </MenuItem>
+            <MenuItem onClick={handleCloseNavMenu}>
+              <NetflixNavigationLink to="/browse" variant="body1">
+                Movies
+              </NetflixNavigationLink>
+            </MenuItem>
+            <MenuItem onClick={handleCloseNavMenu}>
+              <NetflixNavigationLink to="/browse" variant="body1">
+                Tv Shows
+              </NetflixNavigationLink>
+            </MenuItem>
           </Menu>
         </Box>
         <Typography
@@ -118,16 +142,27 @@ const MainHeader = () => {
           spacing={3}
           sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}
         >
-          {pages.map((page) => (
-            <NetflixNavigationLink
-              to=""
-              variant="subtitle1"
-              key={page}
-              onClick={handleCloseNavMenu}
-            >
-              {page}
-            </NetflixNavigationLink>
-          ))}
+          <NetflixNavigationLink
+            to="/my-list"
+            variant="subtitle1"
+            onClick={handleCloseNavMenu}
+          >
+            My List
+          </NetflixNavigationLink>
+          <NetflixNavigationLink
+            to="/browse"
+            variant="subtitle1"
+            onClick={handleCloseNavMenu}
+          >
+            Movies
+          </NetflixNavigationLink>
+          <NetflixNavigationLink
+            to="/browse"
+            variant="subtitle1"
+            onClick={handleCloseNavMenu}
+          >
+            Tv Shows
+          </NetflixNavigationLink>
         </Stack>
 
         <Box sx={{ flexGrow: 0, display: "flex", gap: 2 }}>
@@ -153,11 +188,12 @@ const MainHeader = () => {
             open={Boolean(anchorElUser)}
             onClose={handleCloseUserMenu}
           >
-            {["Account", "Logout"].map((setting) => (
-              <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                <Typography textAlign="center">{setting}</Typography>
-              </MenuItem>
-            ))}
+            <MenuItem onClick={handleAccount}>
+              <Typography textAlign="center">Account</Typography>
+            </MenuItem>
+            <MenuItem onClick={handleLogout}>
+              <Typography textAlign="center">Logout</Typography>
+            </MenuItem>
           </Menu>
         </Box>
       </Toolbar>

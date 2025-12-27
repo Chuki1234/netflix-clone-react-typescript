@@ -2,12 +2,18 @@ import { CustomGenre } from "src/types/Genre";
 
 export const API_ENDPOINT_URL = import.meta.env.VITE_APP_API_ENDPOINT_URL;
 export const TMDB_V3_API_KEY = import.meta.env.VITE_APP_TMDB_V3_API_KEY;
+export const BACKEND_API_URL = import.meta.env.VITE_APP_BACKEND_API_URL || "http://localhost:5000/api";
 
 export const MAIN_PATH = {
   root: "",
   browse: "browse",
   genreExplore: "genre",
   watch: "watch",
+  myList: "my-list",
+  account: "account",
+  login: "login",
+  register: "register",
+  landing: "landing",
 };
 
 export const ARROW_MAX_WIDTH = 60;

@@ -1,14 +1,20 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { tmdbApi } from "./slices/apiSlice";
+import { authApi } from "./slices/authApiSlice";
 import discoverReducer from "./slices/discover";
+import userPreferencesReducer from "./slices/userPreferences";
+import authReducer from "./slices/authSlice";
 
 const store = configureStore({
   reducer: {
     discover: discoverReducer,
+    userPreferences: userPreferencesReducer,
+    auth: authReducer,
     [tmdbApi.reducerPath]: tmdbApi.reducer,
+    [authApi.reducerPath]: authApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(tmdbApi.middleware),
+    getDefaultMiddleware().concat(tmdbApi.middleware, authApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

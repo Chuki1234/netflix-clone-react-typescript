@@ -6,7 +6,9 @@ import Typography from "@mui/material/Typography";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Movie } from "src/types/Movie";
 import { usePortal } from "src/providers/PortalProvider";
@@ -21,6 +23,8 @@ import { useGetConfigurationQuery } from "src/store/slices/configuration";
 import { MEDIA_TYPE } from "src/types/Common";
 import { useGetGenresQuery } from "src/store/slices/genre";
 import { MAIN_PATH } from "src/constant";
+import { useAppDispatch, useAppSelector } from "src/hooks/redux";
+import { toggleLike, toggleMyList, selectIsLiked, selectIsInMyList } from "src/store/slices/userPreferences";
 
 interface VideoCardModalProps {
   video: Movie;
@@ -32,12 +36,29 @@ export default function VideoCardModal({
   anchorElement,
 }: VideoCardModalProps) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const { data: configuration } = useGetConfigurationQuery(undefined);
   const { data: genres } = useGetGenresQuery(MEDIA_TYPE.Movie);
   const setPortal = usePortal();
   const rect = anchorElement.getBoundingClientRect();
   const { setDetailType } = useDetailModal();
+
+  const isLiked = useAppSelector((state) =>
+    selectIsLiked(state, video.id, MEDIA_TYPE.Movie)
+  );
+
+  const isInMyList = useAppSelector((state) =>
+    selectIsInMyList(state, video.id, MEDIA_TYPE.Movie)
+  );
+
+  const handleToggleLike = () => {
+    dispatch(toggleLike({ id: video.id, mediaType: MEDIA_TYPE.Movie }));
+  };
+
+  const handleToggleMyList = () => {
+    dispatch(toggleMyList({ id: video.id, mediaType: MEDIA_TYPE.Movie }));
+  };
 
   return (
     <Card
@@ -98,15 +119,30 @@ export default function VideoCardModal({
           <Stack direction="row" spacing={1}>
             <NetflixIconButton
               sx={{ p: 0 }}
-              onClick={() => navigate(`/${MAIN_PATH.watch}`)}
+              onClick={() =>
+                navigate(`/${MAIN_PATH.watch}/${MEDIA_TYPE.Movie}/${video.id}`)
+              }
             >
               <PlayCircleIcon sx={{ width: 40, height: 40 }} />
             </NetflixIconButton>
-            <NetflixIconButton>
-              <AddIcon />
+            <NetflixIconButton
+              onClick={handleToggleMyList}
+              sx={{
+                border: isInMyList ? "2px solid white" : "2px solid rgba(255,255,255,0.5)",
+                bgcolor: isInMyList ? "white" : "transparent",
+                "&:hover": {
+                  bgcolor: isInMyList ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.1)",
+                },
+              }}
+            >
+              {isInMyList ? (
+                <CheckIcon sx={{ color: "black", fontSize: 20 }} />
+              ) : (
+                <AddIcon />
+              )}
             </NetflixIconButton>
-            <NetflixIconButton>
-              <ThumbUpOffAltIcon />
+            <NetflixIconButton onClick={handleToggleLike}>
+              {isLiked ? <ThumbUpIcon /> : <ThumbUpOffAltIcon />}
             </NetflixIconButton>
             <div style={{ flexGrow: 1 }} />
             <NetflixIconButton

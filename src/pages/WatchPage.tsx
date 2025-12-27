@@ -1,5 +1,5 @@
-import { useState, useRef, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useMemo, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Player from "video.js/dist/types/player";
 import { Box, Stack, Typography } from "@mui/material";
 import { SliderUnstyledOwnProps } from "@mui/base/SliderUnstyled";
@@ -13,6 +13,8 @@ import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 
 import useWindowSize from "src/hooks/useWindowSize";
 import { formatTime } from "src/utils/common";
+import { useGetAppendedVideosQuery } from "src/store/slices/discover";
+import { MEDIA_TYPE } from "src/types/Common";
 
 import MaxLineTypography from "src/components/MaxLineTypography";
 import VolumeControllers from "src/components/watch/VolumeControllers";
@@ -22,6 +24,18 @@ import PlayerControlButton from "src/components/watch/PlayerControlButton";
 import MainLoadingScreen from "src/components/MainLoadingScreen";
 
 export function Component() {
+  const { mediaType, id } = useParams<{ mediaType: string; id: string }>();
+  const movieMediaType = (mediaType as MEDIA_TYPE) || MEDIA_TYPE.Movie;
+  const movieId = id ? parseInt(id, 10) : 0;
+
+  const {
+    data: movieDetail,
+    isLoading,
+    isError,
+  } = useGetAppendedVideosQuery(
+    { mediaType: movieMediaType, id: movieId },
+    { skip: !movieId }
+  );
   const playerRef = useRef<Player | null>(null);
   const [playerState, setPlayerState] = useState({
     paused: false,
@@ -36,26 +50,46 @@ export function Component() {
   const [playerInitialized, setPlayerInitialized] = useState(false);
 
   const windowSize = useWindowSize();
+
+  // Get YouTube trailer key from movie detail
+  const trailerKey = useMemo(() => {
+    if (movieDetail?.videos?.results && movieDetail.videos.results.length > 0) {
+      // Find trailer video (usually the first one or one with type "Trailer")
+      const trailer = movieDetail.videos.results.find(
+        (v) => v.type === "Trailer" && v.site === "YouTube"
+      );
+      return trailer?.key || movieDetail.videos.results[0]?.key;
+    }
+    return null;
+  }, [movieDetail]);
+
   const videoJsOptions = useMemo(() => {
+    const sources = trailerKey
+      ? [
+          {
+            type: "video/youtube",
+            src: `https://www.youtube.com/watch?v=${trailerKey}`,
+          },
+        ]
+      : [
+          {
+            // Fallback to sample video if no trailer available
+            src: "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+            type: "application/x-mpegurl",
+          },
+        ];
+
     return {
       preload: "metadata",
       autoplay: true,
       controls: false,
-      // responsive: true,
-      // fluid: true,
       width: windowSize.width,
       height: windowSize.height,
-      sources: [
-        {
-          // src: videoData?.video,
-          // src: "https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8",
-          src: "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
-          type: "application/x-mpegurl",
-        },
-      ],
+      techOrder: trailerKey ? ["youtube"] : undefined,
+      sources,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowSize]);
+  }, [windowSize, trailerKey]);
 
   const handlePlayerReady = function (player: Player): void {
     player.on("pause", () => {
@@ -103,7 +137,42 @@ export function Component() {
     navigate("/browse");
   };
 
-  if (!!videoJsOptions.width) {
+  // Redirect if no valid ID
+  useEffect(() => {
+    if (!movieId || isNaN(movieId)) {
+      navigate("/browse");
+    }
+  }, [movieId, navigate]);
+
+  // Show loading screen while fetching data
+  if (isLoading) {
+    return <MainLoadingScreen />;
+  }
+
+  // Show error or redirect if movie not found
+  if (isError || !movieDetail) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          color: "white",
+        }}
+      >
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Không tìm thấy phim
+        </Typography>
+        <PlayerControlButton onClick={handleGoBack}>
+          Quay lại
+        </PlayerControlButton>
+      </Box>
+    );
+  }
+
+  if (!!videoJsOptions.width && movieDetail) {
     return (
       <Box
         sx={{
@@ -134,15 +203,16 @@ export function Component() {
                 left: 0,
               }}
             >
-              <Typography
+              <MaxLineTypography
                 variant="h3"
+                maxLine={1}
                 sx={{
                   fontWeight: 700,
                   color: "white",
                 }}
               >
-                Title
-              </Typography>
+                {movieDetail.title || "Title"}
+              </MaxLineTypography>
             </Box>
             <Box
               px={{ xs: 0, sm: 1, md: 2 }}
@@ -236,7 +306,7 @@ export function Component() {
                     textAlign="center"
                     sx={{ maxWidth: 300, mx: "auto", color: "white" }}
                   >
-                    Description
+                    {movieDetail.overview || "Description"}
                   </MaxLineTypography>
                 </Box>
                 {/* end middle time */}

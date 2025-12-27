@@ -11,7 +11,9 @@ import Slide from "@mui/material/Slide";
 import { TransitionProps } from "@mui/material/transitions";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import Player from "video.js/dist/types/player";
@@ -27,6 +29,8 @@ import { useDetailModal } from "src/providers/DetailModalProvider";
 import { useGetSimilarVideosQuery } from "src/store/slices/discover";
 import { MEDIA_TYPE } from "src/types/Common";
 import VideoJSPlayer from "./watch/VideoJSPlayer";
+import { useAppDispatch, useAppSelector } from "src/hooks/redux";
+import { toggleLike, toggleMyList, selectIsLiked, selectIsInMyList } from "src/store/slices/userPreferences";
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
@@ -39,12 +43,37 @@ const Transition = forwardRef(function Transition(
 
 export default function DetailModal() {
   const { detail, setDetailType } = useDetailModal();
+  const dispatch = useAppDispatch();
   const { data: similarVideos } = useGetSimilarVideosQuery(
     { mediaType: detail.mediaType ?? MEDIA_TYPE.Movie, id: detail.id ?? 0 },
     { skip: !detail.id }
   );
   const playerRef = useRef<Player | null>(null);
   const [muted, setMuted] = useState(true);
+
+  const isLiked = useAppSelector((state) =>
+    detail.id && detail.mediaType
+      ? selectIsLiked(state, detail.id, detail.mediaType)
+      : false
+  );
+
+  const isInMyList = useAppSelector((state) =>
+    detail.id && detail.mediaType
+      ? selectIsInMyList(state, detail.id, detail.mediaType)
+      : false
+  );
+
+  const handleToggleLike = () => {
+    if (detail.id && detail.mediaType) {
+      dispatch(toggleLike({ id: detail.id, mediaType: detail.mediaType }));
+    }
+  };
+
+  const handleToggleMyList = () => {
+    if (detail.id && detail.mediaType) {
+      dispatch(toggleMyList({ id: detail.id, mediaType: detail.mediaType }));
+    }
+  };
 
   const handleReady = useCallback((player: Player) => {
     playerRef.current = player;
@@ -167,12 +196,29 @@ export default function DetailModal() {
                   {detail.mediaDetail?.title}
                 </MaxLineTypography>
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                  <PlayButton sx={{ color: "black", py: 0 }} />
-                  <NetflixIconButton>
-                    <AddIcon />
+                  <PlayButton
+                    sx={{ color: "black", py: 0 }}
+                    movieId={detail.id}
+                    mediaType={detail.mediaType}
+                  />
+                  <NetflixIconButton
+                    onClick={handleToggleMyList}
+                    sx={{
+                      border: isInMyList ? "2px solid white" : "2px solid rgba(255,255,255,0.5)",
+                      bgcolor: isInMyList ? "white" : "transparent",
+                      "&:hover": {
+                        bgcolor: isInMyList ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.1)",
+                      },
+                    }}
+                  >
+                    {isInMyList ? (
+                      <CheckIcon sx={{ color: "black" }} />
+                    ) : (
+                      <AddIcon />
+                    )}
                   </NetflixIconButton>
-                  <NetflixIconButton>
-                    <ThumbUpOffAltIcon />
+                  <NetflixIconButton onClick={handleToggleLike}>
+                    {isLiked ? <ThumbUpIcon /> : <ThumbUpOffAltIcon />}
                   </NetflixIconButton>
                   <Box flexGrow={1} />
                   <NetflixIconButton

@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigation } from "react-router-dom";
+import { Outlet, useLocation, useNavigation, Navigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 
 import DetailModal from "src/components/DetailModal";

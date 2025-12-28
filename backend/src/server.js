@@ -5,6 +5,7 @@ import connectDB from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js";
 import preferencesRoutes from "./routes/preferencesRoutes.js";
 import watchHistoryRoutes from "./routes/watchHistoryRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 // Load env vars
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api/auth", authRoutes);
 app.use("/api/preferences", preferencesRoutes);
 app.use("/api/watch-history", watchHistoryRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

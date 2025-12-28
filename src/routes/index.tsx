@@ -42,6 +42,14 @@ const router = createBrowserRouter([
         path: MAIN_PATH.account,
         lazy: () => import("src/pages/AccountPage"),
       },
+      {
+        path: MAIN_PATH.payment,
+        lazy: () => import("src/pages/PaymentPage"),
+      },
+      {
+        path: MAIN_PATH.paymentCheckout,
+        lazy: () => import("src/pages/PaymentCheckoutPage"),
+      },
     ],
   },
   {

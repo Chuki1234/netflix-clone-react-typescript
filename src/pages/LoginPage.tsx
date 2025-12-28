@@ -50,11 +50,28 @@ export function Component() {
       const result = await login({ email, password }).unwrap();
       dispatch(
         setCredentials({
-          user: { _id: result._id, name: result.name, email: result.email },
+          user: {
+            _id: result._id,
+            name: result.name,
+            email: result.email,
+            subscriptionPlan: result.subscriptionPlan,
+            subscriptionStatus: result.subscriptionStatus,
+            paymentStatus: result.paymentStatus,
+          },
           token: result.token,
         })
       );
-      navigate(`/${MAIN_PATH.browse}`);
+      
+      // Check subscription status
+      // Only redirect to payment if user has NO subscription at all
+      // If user has subscription (even pending), allow access to home
+      if (!result.subscriptionPlan && !result.subscriptionStatus) {
+        // No subscription at all, redirect to payment
+        navigate(`/${MAIN_PATH.payment}?newUser=true`);
+      } else {
+        // User has subscription (active, pending, etc.) - go to home
+        navigate(`/${MAIN_PATH.browse}`);
+      }
     } catch (err: any) {
       setError(err?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại.");
     }

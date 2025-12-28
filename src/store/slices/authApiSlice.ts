@@ -5,8 +5,12 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  subscriptionPlan?: "Basic" | "Standard" | "Premium";
-  subscriptionStatus?: "Active" | "Inactive" | "Cancelled";
+  subscriptionPlan?: "Mobile" | "Basic" | "Standard" | "Premium" | null;
+  subscriptionStatus?: "pending" | "active" | "inactive" | "cancelled" | null;
+  paymentStatus?: "pending" | "confirmed" | "failed" | null;
+  paymentDate?: Date | string | null;
+  activatedAt?: Date | string | null;
+  expiresAt?: Date | string | null;
 }
 
 export interface LoginRequest {
@@ -25,6 +29,13 @@ export interface AuthResponse {
   name: string;
   email: string;
   token: string;
+  subscriptionPlan?: "Mobile" | "Basic" | "Standard" | "Premium" | null;
+  subscriptionStatus?: "pending" | "active" | "inactive" | "cancelled" | null;
+  paymentStatus?: "pending" | "confirmed" | "failed" | null;
+}
+
+export interface CheckEmailResponse {
+  exists: boolean;
 }
 
 const getToken = () => {
@@ -45,6 +56,9 @@ export const authApi = createApi({
   }),
   tagTypes: ["User"],
   endpoints: (build) => ({
+    checkEmail: build.query<CheckEmailResponse, string>({
+      query: (email) => `/auth/check-email?email=${encodeURIComponent(email)}`,
+    }),
     register: build.mutation<AuthResponse, RegisterRequest>({
       query: (credentials) => ({
         url: "/auth/register",
@@ -66,5 +80,10 @@ export const authApi = createApi({
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useGetMeQuery } = authApi;
+export const {
+  useCheckEmailQuery,
+  useRegisterMutation,
+  useLoginMutation,
+  useGetMeQuery,
+} = authApi;
 

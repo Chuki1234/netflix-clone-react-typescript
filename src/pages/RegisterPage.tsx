@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link as RouterLink, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Box,
   Container,
@@ -19,14 +19,26 @@ import { useAppDispatch } from "src/hooks/redux";
 export function Component() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
-    email: "",
+    emailOrPhone: "",
     password: "",
     confirmPassword: "",
     name: "",
   });
   const [error, setError] = useState("");
   const [register, { isLoading }] = useRegisterMutation();
+
+  // Get email from URL params and set it
+  useEffect(() => {
+    const emailFromUrl = searchParams.get("email");
+    if (emailFromUrl) {
+      setFormData((prev) => ({
+        ...prev,
+        emailOrPhone: emailFromUrl,
+      }));
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -41,34 +53,41 @@ export function Component() {
     setError("");
 
     // Validation
-    if (!formData.email || !formData.password || !formData.confirmPassword || !formData.name) {
+    if (!formData.emailOrPhone || !formData.password || !formData.confirmPassword || !formData.name) {
       setError("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự");
-      return;
-    }
-
+    // Check if password confirmation matches
     if (formData.password !== formData.confirmPassword) {
       setError("Mật khẩu xác nhận không khớp");
       return;
     }
 
+    // Determine if input is email or phone number
+    const isEmail = formData.emailOrPhone.includes("@");
+    const email = isEmail ? formData.emailOrPhone : `${formData.emailOrPhone}@phone.netflix`;
+
     try {
       const result = await register({
         name: formData.name,
-        email: formData.email,
+        email: email,
         password: formData.password,
       }).unwrap();
       dispatch(
         setCredentials({
-          user: { _id: result._id, name: result.name, email: result.email },
+          user: {
+            _id: result._id,
+            name: result.name,
+            email: result.email,
+            subscriptionPlan: result.subscriptionPlan,
+            subscriptionStatus: result.subscriptionStatus,
+          },
           token: result.token,
         })
       );
-      navigate(`/${MAIN_PATH.browse}`);
+      // New user must select a plan
+      navigate(`/${MAIN_PATH.payment}?newUser=true`);
     } catch (err: any) {
       setError(err?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.");
     }
@@ -187,9 +206,9 @@ export function Component() {
             <TextField
               fullWidth
               label="Email hoặc số điện thoại"
-              type="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              name="emailOrPhone"
+              value={formData.emailOrPhone}
               onChange={handleChange}
               sx={{
                 "& .MuiOutlinedInput-root": {
@@ -223,7 +242,6 @@ export function Component() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              helperText="Mật khẩu phải có ít nhất 6 ký tự"
               sx={{
                 "& .MuiOutlinedInput-root": {
                   bgcolor: "rgba(255, 255, 255, 0.1)",

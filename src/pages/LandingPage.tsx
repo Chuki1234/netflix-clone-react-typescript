@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -9,13 +10,36 @@ import {
   Stack,
   AppBar,
   Toolbar,
+  CircularProgress,
 } from "@mui/material";
 import Logo from "src/components/Logo";
 import { MAIN_PATH } from "src/constant";
+import { useCheckEmailQuery } from "src/store/slices/authApiSlice";
 
 export function Component() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [shouldCheck, setShouldCheck] = useState(false);
+
+  // Check email when user submits
+  const { data: emailCheck, isLoading: isCheckingEmail } = useCheckEmailQuery(
+    email,
+    { skip: !shouldCheck || !email }
+  );
+
+  // Navigate based on email check result
+  React.useEffect(() => {
+    if (emailCheck !== undefined && shouldCheck) {
+      setShouldCheck(false);
+      if (emailCheck.exists) {
+        // Email exists, go to login
+        navigate(`/${MAIN_PATH.login}?email=${encodeURIComponent(email)}`);
+      } else {
+        // Email doesn't exist, go to register
+        navigate(`/${MAIN_PATH.register}?email=${encodeURIComponent(email)}`);
+      }
+    }
+  }, [emailCheck, shouldCheck, email, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +48,8 @@ export function Component() {
       return;
     }
 
-    // Navigate to login page with email as query parameter
-    navigate(`/${MAIN_PATH.login}?email=${encodeURIComponent(email)}`);
+    // Trigger email check
+    setShouldCheck(true);
   };
 
   return (

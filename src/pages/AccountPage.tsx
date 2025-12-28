@@ -13,10 +13,11 @@ import {
 import { useAppSelector } from "src/hooks/redux";
 import { selectCurrentUser } from "src/store/slices/authSlice";
 import { selectMyList, selectLikedMovies } from "src/store/slices/userPreferences";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { MAIN_PATH } from "src/constant";
 
 export function Component() {
+  const navigate = useNavigate();
   const user = useAppSelector(selectCurrentUser);
   const myList = useAppSelector(selectMyList);
   const likedMovies = useAppSelector(selectLikedMovies);
@@ -269,13 +270,10 @@ export function Component() {
                 <Button
                   variant="outlined"
                   sx={{ mt: 2, alignSelf: "flex-start" }}
-                  disabled
+                  onClick={() => navigate(`/${MAIN_PATH.payment}`)}
                 >
                   Change Plan
                 </Button>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Plan management features coming soon
-                </Typography>
               </Stack>
             </Paper>
           </Box>

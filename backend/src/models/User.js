@@ -10,23 +10,47 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, "Please add an email"],
+      required: [true, "Please add an email or phone number"],
       unique: true,
       lowercase: true,
       trim: true,
-      match: [
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-        "Please add a valid email",
-      ],
+      // Allow email format or phone number format (phone numbers will be stored as phone@phone.netflix)
     },
     password: {
       type: String,
       required: [true, "Please add a password"],
-      minlength: 6,
       select: false, // Don't return password by default
     },
     avatar: {
       type: String,
+      default: null,
+    },
+    // Subscription fields
+    subscriptionPlan: {
+      type: String,
+      enum: ["Mobile", "Basic", "Standard", "Premium"],
+      default: null,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ["pending", "active", "inactive", "cancelled"],
+      default: null,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "confirmed", "failed"],
+      default: null,
+    },
+    paymentDate: {
+      type: Date,
+      default: null,
+    },
+    activatedAt: {
+      type: Date,
+      default: null,
+    },
+    expiresAt: {
+      type: Date,
       default: null,
     },
   },

@@ -11,6 +11,8 @@ export const MAIN_PATH = {
   watch: "watch",
   myList: "my-list",
   account: "account",
+  payment: "payment",
+  paymentCheckout: "payment/checkout",
   login: "login",
   register: "register",
   landing: "landing",

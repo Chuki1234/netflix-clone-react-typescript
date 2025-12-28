@@ -1,10 +1,32 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
-// @desc    Register a new user
+// @desc    Check if email exists
+// @route   GET /api/auth/check-email
+// @access  Public
+export const checkEmail = async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    res.json({
+      exists: !!user,
+    });
+  } catch (error) {
+    console.error("Check email error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public
-export const register = async (req, res) => {
+export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -14,7 +36,7 @@ export const register = async (req, res) => {
     }
 
     // Check if user exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: email.toLowerCase() });
 
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
@@ -23,8 +45,12 @@ export const register = async (req, res) => {
     // Create user
     const user = await User.create({
       name,
-      email,
+      email: email.toLowerCase(),
       password,
+      // Subscription fields remain null until payment
+      subscriptionPlan: null,
+      subscriptionStatus: null,
+      paymentStatus: null,
     });
 
     if (user) {
@@ -32,13 +58,15 @@ export const register = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        subscriptionPlan: user.subscriptionPlan,
+        subscriptionStatus: user.subscriptionStatus,
         token: generateToken(user._id),
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Register error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -46,30 +74,35 @@ export const register = async (req, res) => {
 // @desc    Authenticate a user
 // @route   POST /api/auth/login
 // @access  Public
-export const login = async (req, res) => {
+export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Validation
     if (!email || !password) {
-      return res.status(400).json({ message: "Please add all fields" });
+      return res.status(400).json({ message: "Please add email and password" });
     }
 
     // Check for user email
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+password"
+    );
 
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
         name: user.name,
         email: user.email,
+        subscriptionPlan: user.subscriptionPlan,
+        subscriptionStatus: user.subscriptionStatus,
+        paymentStatus: user.paymentStatus,
         token: generateToken(user._id),
       });
     } else {
       res.status(401).json({ message: "Invalid credentials" });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -85,10 +118,16 @@ export const getMe = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      avatar: user.avatar,
+      subscriptionPlan: user.subscriptionPlan,
+      subscriptionStatus: user.subscriptionStatus,
+      paymentStatus: user.paymentStatus,
+      paymentDate: user.paymentDate,
+      activatedAt: user.activatedAt,
+      expiresAt: user.expiresAt,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get me error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-

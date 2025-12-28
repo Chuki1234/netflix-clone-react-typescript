@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import preferencesRoutes from "./routes/preferencesRoutes.js";
 import watchHistoryRoutes from "./routes/watchHistoryRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 // Load env vars
 dotenv.config();
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/preferences", preferencesRoutes);
 app.use("/api/watch-history", watchHistoryRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

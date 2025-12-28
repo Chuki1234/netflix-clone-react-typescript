@@ -54,6 +54,7 @@ export function Component() {
             _id: result._id,
             name: result.name,
             email: result.email,
+            role: result.role,
             subscriptionPlan: result.subscriptionPlan,
             subscriptionStatus: result.subscriptionStatus,
             paymentStatus: result.paymentStatus,
@@ -62,15 +63,22 @@ export function Component() {
         })
       );
       
-      // Check subscription status
-      // Only redirect to payment if user has NO subscription at all
-      // If user has subscription (even pending), allow access to home
-      if (!result.subscriptionPlan && !result.subscriptionStatus) {
-        // No subscription at all, redirect to payment
-        navigate(`/${MAIN_PATH.payment}?newUser=true`);
-      } else {
-        // User has subscription (active, pending, etc.) - go to home
+      // Check if user is admin
+      if (result.role === "admin") {
+        // Admin always goes to home, no payment needed
         navigate(`/${MAIN_PATH.browse}`);
+      } else {
+        // Regular user flow
+        // Check subscription status
+        // Only redirect to payment if user has NO subscription at all
+        // If user has subscription (even pending), allow access to home
+        if (!result.subscriptionPlan && !result.subscriptionStatus) {
+          // No subscription at all, redirect to payment
+          navigate(`/${MAIN_PATH.payment}?newUser=true`);
+        } else {
+          // User has subscription (active, pending, etc.) - go to home
+          navigate(`/${MAIN_PATH.browse}`);
+        }
       }
     } catch (err: any) {
       setError(err?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại.");

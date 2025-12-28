@@ -16,12 +16,13 @@ import { APP_BAR_HEIGHT, MAIN_PATH } from "src/constant";
 import Logo from "../Logo";
 import SearchBox from "../SearchBox";
 import NetflixNavigationLink from "../NetflixNavigationLink";
-import { useAppDispatch } from "src/hooks/redux";
-import { logout } from "src/store/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "src/hooks/redux";
+import { logout, selectCurrentUser } from "src/store/slices/authSlice";
 
 const MainHeader = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const user = useAppSelector(selectCurrentUser);
   const isOffset = useOffSetTop(APP_BAR_HEIGHT);
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
@@ -49,6 +50,11 @@ const MainHeader = () => {
   const handleAccount = () => {
     handleCloseUserMenu();
     navigate(`/${MAIN_PATH.account}`);
+  };
+
+  const handleManagement = () => {
+    handleCloseUserMenu();
+    navigate(`/${MAIN_PATH.adminDashboard}`);
   };
 
   const handleLogout = () => {
@@ -191,6 +197,11 @@ const MainHeader = () => {
             <MenuItem onClick={handleAccount}>
               <Typography textAlign="center">Account</Typography>
             </MenuItem>
+            {user?.role === "admin" && (
+              <MenuItem onClick={handleManagement}>
+                <Typography textAlign="center">Management</Typography>
+              </MenuItem>
+            )}
             <MenuItem onClick={handleLogout}>
               <Typography textAlign="center">Logout</Typography>
             </MenuItem>

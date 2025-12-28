@@ -63,7 +63,7 @@ export const paymentApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Payment"],
+  tagTypes: ["Payment", "User"],
   endpoints: (build) => ({
     processPayment: build.mutation<ProcessPaymentResponse, ProcessPaymentRequest>({
       query: (data) => ({

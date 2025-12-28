@@ -5,6 +5,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
+  role?: "user" | "admin";
   subscriptionPlan?: "Mobile" | "Basic" | "Standard" | "Premium" | null;
   subscriptionStatus?: "pending" | "active" | "inactive" | "cancelled" | null;
   paymentStatus?: "pending" | "confirmed" | "failed" | null;
@@ -28,6 +29,7 @@ export interface AuthResponse {
   _id: string;
   name: string;
   email: string;
+  role?: "user" | "admin";
   token: string;
   subscriptionPlan?: "Mobile" | "Basic" | "Standard" | "Premium" | null;
   subscriptionStatus?: "pending" | "active" | "inactive" | "cancelled" | null;

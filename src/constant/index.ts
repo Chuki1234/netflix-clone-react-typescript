@@ -16,6 +16,8 @@ export const MAIN_PATH = {
   login: "login",
   register: "register",
   landing: "landing",
+  admin: "admin",
+  adminDashboard: "admin/dashboard",
 };
 
 export const ARROW_MAX_WIDTH = 60;

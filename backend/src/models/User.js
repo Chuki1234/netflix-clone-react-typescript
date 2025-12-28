@@ -25,6 +25,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
     // Subscription fields
     subscriptionPlan: {
       type: String,

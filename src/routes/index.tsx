@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { MAIN_PATH } from "src/constant";
 
 import MainLayout from "src/layouts/MainLayout";
+import AdminLayout from "src/layouts/AdminLayout";
 
 const router = createBrowserRouter([
   {
@@ -59,6 +60,28 @@ const router = createBrowserRouter([
   {
     path: MAIN_PATH.register,
     lazy: () => import("src/pages/RegisterPage"),
+  },
+  {
+    path: MAIN_PATH.adminDashboard,
+    element: <AdminLayout />,
+    children: [
+      {
+        index: true,
+        lazy: () => import("src/pages/admin/AdminDashboardHomePage"),
+      },
+      {
+        path: "accounts",
+        lazy: () => import("src/pages/admin/AdminAccountsPage"),
+      },
+      {
+        path: "movies",
+        lazy: () => import("src/pages/admin/AdminMoviesPage"),
+      },
+      {
+        path: "categories",
+        lazy: () => import("src/pages/admin/AdminCategoriesPage"),
+      },
+    ],
   },
 ]);
 

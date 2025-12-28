@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import { createNotification } from "../utils/createNotification.js";
 
 // @desc    Admin login
 // @route   POST /api/admin/login
@@ -135,6 +136,18 @@ export const updateUserSubscription = async (req, res) => {
         expiresAt.setDate(expiresAt.getDate() + 30);
         user.expiresAt = expiresAt;
       }
+
+      // Create notification for user
+      await createNotification({
+        userId: user._id,
+        type: "payment_approved",
+        title: "Payment Approved",
+        message: `Your ${user.subscriptionPlan} subscription has been approved and activated!`,
+        metadata: {
+          subscriptionPlan: user.subscriptionPlan,
+          subscriptionStatus: "active",
+        },
+      });
     } else if (action === "reject") {
       // Reject payment
       user.subscriptionStatus = "inactive";

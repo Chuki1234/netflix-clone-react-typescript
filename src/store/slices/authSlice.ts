@@ -56,10 +56,18 @@ const authSlice = createSlice({
       state.user = action.payload;
       localStorage.setItem("user", JSON.stringify(action.payload));
     },
+    syncAuthState: (state) => {
+      // Sync state from localStorage (called when storage event is triggered)
+      const token = loadToken();
+      const user = loadUser();
+      state.token = token;
+      state.user = user;
+      state.isAuthenticated = !!token;
+    },
   },
 });
 
-export const { setCredentials, logout, updateUser } = authSlice.actions;
+export const { setCredentials, logout, updateUser, syncAuthState } = authSlice.actions;
 
 export default authSlice.reducer;
 

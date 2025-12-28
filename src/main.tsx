@@ -12,6 +12,7 @@ import { extendedApi } from "./store/slices/configuration";
 import palette from "./theme/palette";
 import router from "./routes";
 import MainLoadingScreen from "./components/MainLoadingScreen";
+import StorageSyncProvider from "./components/StorageSyncProvider";
 
 store.dispatch(extendedApi.endpoints.getConfiguration.initiate(undefined));
 
@@ -22,10 +23,12 @@ root.render(
   <Provider store={store}>
     <React.StrictMode>
       <ThemeProvider theme={createTheme({ palette })}>
-        <RouterProvider
-          router={router}
-          fallbackElement={<MainLoadingScreen />}
-        />
+        <StorageSyncProvider>
+          <RouterProvider
+            router={router}
+            fallbackElement={<MainLoadingScreen />}
+          />
+        </StorageSyncProvider>
       </ThemeProvider>
     </React.StrictMode>
   </Provider>

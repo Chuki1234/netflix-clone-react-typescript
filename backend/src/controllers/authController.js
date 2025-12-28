@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import { createNotificationForAllAdmins } from "../utils/createNotification.js";
 
 // @desc    Check if email exists
 // @route   GET /api/auth/check-email
@@ -54,6 +55,18 @@ export const registerUser = async (req, res) => {
     });
 
     if (user) {
+      // Notify all admins about new user registration
+      await createNotificationForAllAdmins({
+        type: "user_registered",
+        title: "New User Registered",
+        message: `${user.name} (${user.email}) has just registered.`,
+        metadata: {
+          userId: user._id,
+          userName: user.name,
+          userEmail: user.email,
+        },
+      });
+
       res.status(201).json({
         _id: user._id,
         name: user.name,

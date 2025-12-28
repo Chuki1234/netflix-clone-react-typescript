@@ -17,12 +17,14 @@ import Logo from "../Logo";
 import SearchBox from "../SearchBox";
 import NetflixNavigationLink from "../NetflixNavigationLink";
 import { useAppDispatch, useAppSelector } from "src/hooks/redux";
-import { logout, selectCurrentUser } from "src/store/slices/authSlice";
+import { logout, selectCurrentUser, selectIsAuthenticated } from "src/store/slices/authSlice";
+import NotificationMenu from "../NotificationMenu";
 
 const MainHeader = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectCurrentUser);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isOffset = useOffSetTop(APP_BAR_HEIGHT);
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
@@ -171,8 +173,9 @@ const MainHeader = () => {
           </NetflixNavigationLink>
         </Stack>
 
-        <Box sx={{ flexGrow: 0, display: "flex", gap: 2 }}>
+        <Box sx={{ flexGrow: 0, display: "flex", gap: 2, alignItems: "center" }}>
           <SearchBox />
+          {isAuthenticated && <NotificationMenu authenticated={isAuthenticated} />}
           <Tooltip title="Open settings">
             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
               <Avatar alt="user_avatar" src="/avatar.png" variant="rounded" />

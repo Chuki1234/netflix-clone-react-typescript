@@ -46,8 +46,12 @@ export function Component() {
       return;
     }
 
+    // Determine if input is email or phone number
+    const isEmail = email.includes("@");
+    const emailOrPhone = isEmail ? email : `${email}@phone.netflix`;
+
     try {
-      const result = await login({ email, password }).unwrap();
+      const result = await login({ email: emailOrPhone, password }).unwrap();
       dispatch(
         setCredentials({
           user: {
@@ -167,7 +171,7 @@ export function Component() {
             <TextField
               fullWidth
               placeholder="Email hoặc số điện thoại di động"
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               sx={{

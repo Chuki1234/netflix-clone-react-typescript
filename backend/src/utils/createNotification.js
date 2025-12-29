@@ -33,6 +33,13 @@ export const createNotificationForAllAdmins = async ({ type, title, message, met
     const { User } = await import("../models/index.js");
     const admins = await User.find({ role: "admin" }).select("_id");
     
+    console.log(`📧 Creating notifications for ${admins.length} admin(s)`);
+    
+    if (admins.length === 0) {
+      console.warn("⚠️ No admin users found. Notification will not be created.");
+      return;
+    }
+    
     const notifications = admins.map((admin) => ({
       userId: admin._id,
       type,
@@ -41,11 +48,11 @@ export const createNotificationForAllAdmins = async ({ type, title, message, met
       metadata,
     }));
 
-    if (notifications.length > 0) {
-      await Notification.insertMany(notifications);
-    }
+    const result = await Notification.insertMany(notifications);
+    console.log(`✅ Successfully created ${result.length} notification(s) for admins`);
+    return result;
   } catch (error) {
-    console.error("Create notification for all admins error:", error);
+    console.error("❌ Create notification for all admins error:", error);
     throw error;
   }
 };

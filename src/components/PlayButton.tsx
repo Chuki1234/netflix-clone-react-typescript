@@ -28,7 +28,6 @@ export default function PlayButton({
 
   return (
     <Button
-      color="inherit"
       variant="contained"
       startIcon={
         <PlayArrowIcon
@@ -50,6 +49,11 @@ export default function PlayButton({
         fontWeight: "bold",
         whiteSpace: "nowrap",
         textTransform: "capitalize",
+        bgcolor: "white",
+        color: "black",
+        "&:hover": {
+          bgcolor: "rgba(255, 255, 255, 0.8)",
+        },
         ...sx,
       }}
       onClick={handleClick}

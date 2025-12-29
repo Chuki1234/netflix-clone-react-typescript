@@ -1,33 +1,23 @@
 import {
   Box,
   Typography,
-  Avatar,
+  Container,
   Stack,
   Paper,
   Chip,
   Button,
   Divider,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Card,
   CardContent,
 } from "@mui/material";
 import {
   ArrowForward as ArrowForwardIcon,
   CreditCard as CreditCardIcon,
-  Devices as DevicesIcon,
-  Lock as LockIcon,
-  Person as PersonIcon,
-  FamilyRestroom as FamilyRestroomIcon,
 } from "@mui/icons-material";
 import { useAppSelector } from "src/hooks/redux";
 import { selectCurrentUser } from "src/store/slices/authSlice";
 import { Navigate, useNavigate } from "react-router-dom";
-import { MAIN_PATH } from "src/constant";
-import AccountSidebar from "src/components/AccountSidebar";
+import { MAIN_PATH, APP_BAR_HEIGHT } from "src/constant";
 
 export function Component() {
   const navigate = useNavigate();
@@ -54,60 +44,18 @@ export function Component() {
     return plan ? prices[plan] || "N/A" : "N/A";
   };
 
-  const quickLinks = [
-    {
-      text: "Change Plan",
-      icon: <CreditCardIcon />,
-      onClick: () => navigate(`/${MAIN_PATH.payment}`),
-    },
-    {
-      text: "Manage Payment Method",
-      icon: <CreditCardIcon />,
-      onClick: () => {},
-    },
-    {
-      text: "Manage Access and Devices",
-      icon: <DevicesIcon />,
-      onClick: () => {},
-    },
-    {
-      text: "Update Password",
-      icon: <LockIcon />,
-      onClick: () => {},
-    },
-    {
-      text: "Transfer Profile",
-      icon: <PersonIcon />,
-      onClick: () => {},
-    },
-    {
-      text: "Adjust Parental Controls",
-      icon: <FamilyRestroomIcon />,
-      onClick: () => {},
-    },
-  ];
-
   return (
     <Box
       sx={{
-        display: "flex",
         minHeight: "100vh",
         bgcolor: "background.default",
+        pt: `${APP_BAR_HEIGHT + 32}px`,
+        pb: 4,
       }}
     >
-      {/* Sidebar */}
-      <AccountSidebar />
-
-      {/* Main Content */}
-      <Box
-        sx={{
-          flexGrow: 1,
-          p: 4,
-          maxWidth: "1200px",
-        }}
-      >
+      <Container maxWidth="lg">
         <Typography variant="h4" sx={{ color: "text.primary", mb: 4, fontWeight: 700 }}>
-          Account
+          {user.name}
         </Typography>
 
         {/* Membership Information */}
@@ -226,37 +174,7 @@ export function Component() {
             </Stack>
           </Paper>
         </Box>
-
-        {/* Quick Links */}
-        <Box>
-          <Typography variant="h6" sx={{ color: "text.primary", mb: 2, fontWeight: 600 }}>
-            Quick Links
-          </Typography>
-          <Paper>
-            <List>
-              {quickLinks.map((link, index) => (
-                <Box key={link.text}>
-                  <ListItem disablePadding>
-                    <ListItemButton onClick={link.onClick}>
-                      <ListItemIcon sx={{ color: "text.secondary", minWidth: 40 }}>
-                        {link.icon}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={link.text}
-                        primaryTypographyProps={{
-                          sx: { fontWeight: 500 },
-                        }}
-                      />
-                      <ArrowForwardIcon sx={{ color: "text.secondary" }} />
-                    </ListItemButton>
-                  </ListItem>
-                  {index < quickLinks.length - 1 && <Divider />}
-                </Box>
-              ))}
-            </List>
-          </Paper>
-        </Box>
-      </Box>
+      </Container>
     </Box>
   );
 }

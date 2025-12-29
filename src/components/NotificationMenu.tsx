@@ -8,8 +8,6 @@ import {
   Box,
   Divider,
   Button,
-  ListItemIcon,
-  ListItemText,
   CircularProgress,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -24,12 +22,18 @@ import {
   Notification,
 } from "src/store/slices/notificationApiSlice";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { MAIN_PATH } from "src/constant";
+import { useAppSelector } from "src/hooks/redux";
+import { selectCurrentUser } from "src/store/slices/authSlice";
 
 interface NotificationMenuProps {
   authenticated: boolean;
 }
 
 export default function NotificationMenu({ authenticated }: NotificationMenuProps) {
+  const navigate = useNavigate();
+  const user = useAppSelector(selectCurrentUser);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -59,12 +63,22 @@ export default function NotificationMenu({ authenticated }: NotificationMenuProp
   };
 
   const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if unread
     if (!notification.read) {
       try {
         await markAsRead(notification._id).unwrap();
       } catch (error) {
         console.error("Failed to mark notification as read:", error);
       }
+    }
+
+    // Close the menu
+    handleClose();
+
+    // Navigate to admin accounts page if user is admin
+    // Only route notifications that are relevant to admin (user_registered, payment_pending)
+    if (user?.role === "admin" && (notification.type === "user_registered" || notification.type === "payment_pending")) {
+      navigate(`/${MAIN_PATH.adminDashboard}/accounts`);
     }
   };
 
@@ -114,9 +128,10 @@ export default function NotificationMenu({ authenticated }: NotificationMenuProp
         }}
         PaperProps={{
           sx: {
-            width: 360,
-            maxHeight: 500,
+            width: 420,
+            maxHeight: 600,
             mt: 1.5,
+            overflowX: "hidden",
           },
         }}
       >
@@ -135,7 +150,7 @@ export default function NotificationMenu({ authenticated }: NotificationMenuProp
           )}
         </Box>
         <Divider />
-        <Box sx={{ maxHeight: 400, overflow: "auto" }}>
+        <Box sx={{ maxHeight: 480, overflowY: "auto", overflowX: "hidden" }}>
           {isLoading ? (
             <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
               <CircularProgress size={24} />
@@ -152,7 +167,7 @@ export default function NotificationMenu({ authenticated }: NotificationMenuProp
                 key={notification._id}
                 onClick={() => handleNotificationClick(notification)}
                 sx={{
-                  py: 1.5,
+                  py: 2,
                   px: 2,
                   backgroundColor: notification.read
                     ? "transparent"
@@ -160,60 +175,80 @@ export default function NotificationMenu({ authenticated }: NotificationMenuProp
                   "&:hover": {
                     backgroundColor: "action.selected",
                   },
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  position: "relative",
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  {!notification.read && (
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        bgcolor: "primary.main",
-                      }}
-                    />
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  primary={
+                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start", gap: 1.5 }}>
+                  <Box sx={{ minWidth: 32, mt: 0.5, display: "flex", alignItems: "flex-start" }}>
+                    {!notification.read && (
+                      <Box
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          bgcolor: "primary.main",
+                          mt: 0.5,
+                        }}
+                      />
+                    )}
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography
                       variant="body2"
                       sx={{
-                        fontWeight: notification.read ? 400 : 600,
-                        mb: 0.5,
+                        fontWeight: notification.read ? 500 : 700,
+                        mb: 0.75,
+                        color: notification.read ? "text.primary" : "text.primary",
+                        wordBreak: "break-word",
+                        lineHeight: 1.4,
                       }}
                     >
                       {notification.title}
                     </Typography>
-                  }
-                  secondary={
-                    <>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ fontSize: "0.875rem" }}
-                      >
-                        {notification.message}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ fontSize: "0.75rem", mt: 0.5, display: "block" }}
-                      >
-                        {formatDistanceToNow(new Date(notification.createdAt), {
-                          addSuffix: true,
-                        })}
-                      </Typography>
-                    </>
-                  }
-                />
-                <IconButton
-                  size="small"
-                  onClick={(e) => handleDelete(e, notification._id)}
-                  sx={{ ml: 1 }}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: "0.875rem",
+                        mb: 1,
+                        wordBreak: "break-word",
+                        whiteSpace: "normal",
+                        lineHeight: 1.5,
+                        display: "block",
+                      }}
+                    >
+                      {notification.message}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: "0.75rem",
+                        display: "block",
+                      }}
+                    >
+                      {formatDistanceToNow(new Date(notification.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleDelete(e, notification._id)}
+                    sx={{
+                      mt: -0.5,
+                      color: "text.secondary",
+                      "&:hover": {
+                        color: "error.main",
+                        backgroundColor: "error.light",
+                      },
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </MenuItem>
             ))
           )}

@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { createNotificationForAllAdmins } from "../utils/createNotification.js";
 
 // @desc    Process new subscription payment
 // @route   POST /api/payment/process
@@ -36,6 +37,26 @@ export const processPayment = async (req, res) => {
     user.expiresAt = expiresAt;
 
     await user.save();
+
+    // Notify all admins about new payment pending approval
+    try {
+      await createNotificationForAllAdmins({
+        type: "payment_pending",
+        title: "New Payment Pending Approval",
+        message: `${user.name} (${user.email}) has submitted a payment for ${planId} plan. Please review and approve.`,
+        metadata: {
+          userId: user._id,
+          userName: user.name,
+          userEmail: user.email,
+          subscriptionPlan: planId,
+          paymentDate: user.paymentDate,
+        },
+      });
+      console.log(`✅ Notification sent to admins for user ${user.email} payment`);
+    } catch (notificationError) {
+      console.error("⚠️ Failed to send notification to admins:", notificationError);
+      // Don't fail the request if notification fails
+    }
 
     res.status(200).json({
       success: true,

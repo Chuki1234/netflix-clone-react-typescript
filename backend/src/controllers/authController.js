@@ -56,16 +56,22 @@ export const registerUser = async (req, res) => {
 
     if (user) {
       // Notify all admins about new user registration
-      await createNotificationForAllAdmins({
-        type: "user_registered",
-        title: "New User Registered",
-        message: `${user.name} (${user.email}) has just registered.`,
-        metadata: {
-          userId: user._id,
-          userName: user.name,
-          userEmail: user.email,
-        },
-      });
+      try {
+        await createNotificationForAllAdmins({
+          type: "user_registered",
+          title: "New User Registered",
+          message: `${user.name} (${user.email}) has just registered.`,
+          metadata: {
+            userId: user._id,
+            userName: user.name,
+            userEmail: user.email,
+          },
+        });
+        console.log(`✅ Notification sent to admins for new user ${user.email}`);
+      } catch (notificationError) {
+        console.error("⚠️ Failed to send notification to admins:", notificationError);
+        // Don't fail the request if notification fails
+      }
 
       res.status(201).json({
         _id: user._id,

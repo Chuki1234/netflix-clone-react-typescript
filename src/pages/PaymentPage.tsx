@@ -86,11 +86,6 @@ export function Component() {
   const [selectedPlan, setSelectedPlan] = useState<Plan["id"] | null>(null);
   const [error, setError] = useState("");
 
-  // Redirect to login if not authenticated
-  if (!user) {
-    return <Navigate to={`/${MAIN_PATH.login}`} replace />;
-  }
-
   // Set initial selected plan
   useEffect(() => {
     if (isNewUser) {
@@ -102,6 +97,11 @@ export function Component() {
       setSelectedPlan(currentPlanId);
     }
   }, [isNewUser, user?.subscriptionPlan]);
+
+  // Redirect to login if not authenticated (after all hooks)
+  if (!user) {
+    return <Navigate to={`/${MAIN_PATH.login}`} replace />;
+  }
 
   const currentPlanId = (user?.subscriptionPlan as Plan["id"]) || null;
   const currentPlan = currentPlanId ? plans.find((p) => p.id === currentPlanId) : null;

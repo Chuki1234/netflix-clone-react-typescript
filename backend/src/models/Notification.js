@@ -12,6 +12,7 @@ const notificationSchema = new mongoose.Schema(
       type: String,
       enum: [
         "payment_approved", // User: payment approved by admin
+        "payment_pending", // Admin: new payment pending approval
         "movie_updated", // User: new movie added/updated
         "user_registered", // Admin: new user registered
       ],

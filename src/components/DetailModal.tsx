@@ -31,6 +31,7 @@ import { MEDIA_TYPE } from "src/types/Common";
 import VideoJSPlayer from "./watch/VideoJSPlayer";
 import { useAppDispatch, useAppSelector } from "src/hooks/redux";
 import { toggleLike, toggleMyList, selectIsLiked, selectIsInMyList } from "src/store/slices/userPreferences";
+import { useSubscriptionCheck } from "src/hooks/useSubscriptionCheck";
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
@@ -44,6 +45,7 @@ const Transition = forwardRef(function Transition(
 export default function DetailModal() {
   const { detail, setDetailType } = useDetailModal();
   const dispatch = useAppDispatch();
+  const { isActive } = useSubscriptionCheck();
   const { data: similarVideos } = useGetSimilarVideosQuery(
     { mediaType: detail.mediaType ?? MEDIA_TYPE.Movie, id: detail.id ?? 0 },
     { skip: !detail.id }

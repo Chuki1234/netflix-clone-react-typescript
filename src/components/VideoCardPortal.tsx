@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Stack from "@mui/material/Stack";
 import Card from "@mui/material/Card";
@@ -25,6 +26,8 @@ import { useGetGenresQuery } from "src/store/slices/genre";
 import { MAIN_PATH } from "src/constant";
 import { useAppDispatch, useAppSelector } from "src/hooks/redux";
 import { toggleLike, toggleMyList, selectIsLiked, selectIsInMyList } from "src/store/slices/userPreferences";
+import { useSubscriptionCheck } from "src/hooks/useSubscriptionCheck";
+import SubscriptionAlert from "./SubscriptionAlert";
 
 interface VideoCardModalProps {
   video: Movie;
@@ -37,6 +40,8 @@ export default function VideoCardModal({
 }: VideoCardModalProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { isActive } = useSubscriptionCheck();
+  const [showAlert, setShowAlert] = useState(false);
 
   const { data: configuration } = useGetConfigurationQuery(undefined);
   const { data: genres } = useGetGenresQuery(MEDIA_TYPE.Movie);
@@ -58,6 +63,14 @@ export default function VideoCardModal({
 
   const handleToggleMyList = () => {
     dispatch(toggleMyList({ id: video.id, mediaType: MEDIA_TYPE.Movie }));
+  };
+
+  const handlePlayClick = () => {
+    if (!isActive) {
+      setShowAlert(true);
+      return;
+    }
+    navigate(`/${MAIN_PATH.watch}/${MEDIA_TYPE.Movie}/${video.id}`);
   };
 
   return (
@@ -119,9 +132,7 @@ export default function VideoCardModal({
           <Stack direction="row" spacing={1}>
             <NetflixIconButton
               sx={{ p: 0 }}
-              onClick={() =>
-                navigate(`/${MAIN_PATH.watch}/${MEDIA_TYPE.Movie}/${video.id}`)
-              }
+              onClick={handlePlayClick}
             >
               <PlayCircleIcon sx={{ width: 40, height: 40 }} />
             </NetflixIconButton>
@@ -173,6 +184,7 @@ export default function VideoCardModal({
           )}
         </Stack>
       </CardContent>
+      <SubscriptionAlert open={showAlert} onClose={() => setShowAlert(false)} />
     </Card>
   );
 }

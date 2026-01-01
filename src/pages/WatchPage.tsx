@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Navigate } from "react-router-dom";
 import Player from "video.js/dist/types/player";
 import { Box, Stack, Typography } from "@mui/material";
 import { SliderUnstyledOwnProps } from "@mui/base/SliderUnstyled";
@@ -15,6 +15,8 @@ import useWindowSize from "src/hooks/useWindowSize";
 import { formatTime } from "src/utils/common";
 import { useGetAppendedVideosQuery } from "src/store/slices/discover";
 import { MEDIA_TYPE } from "src/types/Common";
+import { useSubscriptionCheck } from "src/hooks/useSubscriptionCheck";
+import { MAIN_PATH } from "src/constant";
 
 import MaxLineTypography from "src/components/MaxLineTypography";
 import VolumeControllers from "src/components/watch/VolumeControllers";
@@ -27,6 +29,7 @@ export function Component() {
   const { mediaType, id } = useParams<{ mediaType: string; id: string }>();
   const movieMediaType = (mediaType as MEDIA_TYPE) || MEDIA_TYPE.Movie;
   const movieId = id ? parseInt(id, 10) : 0;
+  const { isActive } = useSubscriptionCheck();
 
   const {
     data: movieDetail,
@@ -50,6 +53,11 @@ export function Component() {
   const [playerInitialized, setPlayerInitialized] = useState(false);
 
   const windowSize = useWindowSize();
+
+  // Redirect if subscription is not active
+  if (!isActive) {
+    return <Navigate to={`/${MAIN_PATH.browse}`} replace />;
+  }
 
   // Get YouTube trailer key from movie detail
   const trailerKey = useMemo(() => {

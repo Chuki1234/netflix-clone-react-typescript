@@ -7,17 +7,19 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-// Load token from sessionStorage (tab-specific, allows different accounts per tab)
+// Load token with priority: sessionStorage -> localStorage (for "remember me")
 const loadToken = (): string | null => {
-  return sessionStorage.getItem("token");
+  return sessionStorage.getItem("token") || localStorage.getItem("token");
 };
 
-// Load user from sessionStorage (tab-specific, allows different accounts per tab)
+// Load user with priority: sessionStorage -> localStorage (for "remember me")
 const loadUser = (): User | null => {
-  const userStr = sessionStorage.getItem("user");
-  if (userStr) {
+  const sessionUser = sessionStorage.getItem("user");
+  const localUser = localStorage.getItem("user");
+  const candidate = sessionUser ?? localUser;
+  if (candidate) {
     try {
-      return JSON.parse(userStr);
+      return JSON.parse(candidate);
     } catch (e) {
       return null;
     }
@@ -37,13 +39,23 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User; token: string }>
+      action: PayloadAction<{ user: User; token: string; rememberMe?: boolean }>
     ) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+      const { user, token, rememberMe = false } = action.payload;
+      state.user = user;
+      state.token = token;
       state.isAuthenticated = true;
-      sessionStorage.setItem("token", action.payload.token);
-      sessionStorage.setItem("user", JSON.stringify(action.payload.user));
+
+      // choose storage based on rememberMe
+      const primaryStorage = rememberMe ? localStorage : sessionStorage;
+      const secondaryStorage = rememberMe ? sessionStorage : localStorage;
+
+      primaryStorage.setItem("token", token);
+      primaryStorage.setItem("user", JSON.stringify(user));
+
+      // clear stale data from the other storage
+      secondaryStorage.removeItem("token");
+      secondaryStorage.removeItem("user");
     },
     logout: (state) => {
       state.user = null;
@@ -51,6 +63,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
     updateUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;

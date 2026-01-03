@@ -41,7 +41,7 @@ export interface CheckEmailResponse {
 }
 
 const getToken = () => {
-  return sessionStorage.getItem("token");
+  return sessionStorage.getItem("token") || localStorage.getItem("token");
 };
 
 export const authApi = createApi({

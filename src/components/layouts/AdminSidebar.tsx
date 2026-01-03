@@ -14,7 +14,6 @@ import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   Movie as MovieIcon,
-  Category as CategoryIcon,
 } from "@mui/icons-material";
 import { MAIN_PATH } from "src/constant";
 import Logo from "../Logo";
@@ -42,11 +41,6 @@ const menuItems = [
     text: "Movie Management",
     icon: <MovieIcon />,
     path: `/${MAIN_PATH.adminDashboard}/movies`,
-  },
-  {
-    text: "Category Management",
-    icon: <CategoryIcon />,
-    path: `/${MAIN_PATH.adminDashboard}/categories`,
   },
 ];
 

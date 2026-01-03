@@ -39,39 +39,39 @@ export default function PlayButton({
 
   return (
     <>
-      <Button
-        variant="contained"
-        startIcon={
-          <PlayArrowIcon
-            sx={{
-              fontSize: {
-                xs: "24px !important",
-                sm: "32px !important",
-                md: "40px !important",
-              },
-            }}
-          />
-        }
-        {...others}
-        sx={{
-          px: { xs: 1, sm: 2 },
-          py: { xs: 0.5, sm: 1 },
-          fontSize: { xs: 18, sm: 24, md: 28 },
-          lineHeight: 1.5,
-          fontWeight: "bold",
-          whiteSpace: "nowrap",
-          textTransform: "capitalize",
-          bgcolor: "white",
-          color: "black",
-          "&:hover": {
-            bgcolor: "rgba(255, 255, 255, 0.8)",
-          },
-          ...sx,
-        }}
-        onClick={handleClick}
-      >
-        Play
-      </Button>
+    <Button
+      variant="contained"
+      startIcon={
+        <PlayArrowIcon
+          sx={{
+            fontSize: {
+              xs: "24px !important",
+              sm: "32px !important",
+              md: "40px !important",
+            },
+          }}
+        />
+      }
+      {...others}
+      sx={{
+        px: { xs: 1, sm: 2 },
+        py: { xs: 0.5, sm: 1 },
+        fontSize: { xs: 18, sm: 24, md: 28 },
+        lineHeight: 1.5,
+        fontWeight: "bold",
+        whiteSpace: "nowrap",
+        textTransform: "capitalize",
+        bgcolor: "white",
+        color: "black",
+        "&:hover": {
+          bgcolor: "rgba(255, 255, 255, 0.8)",
+        },
+        ...sx,
+      }}
+      onClick={handleClick}
+    >
+      Play
+    </Button>
       <SubscriptionAlert open={showAlert} onClose={() => setShowAlert(false)} />
     </>
   );

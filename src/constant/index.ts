@@ -7,6 +7,8 @@ export const BACKEND_API_URL = import.meta.env.VITE_APP_BACKEND_API_URL || "http
 export const MAIN_PATH = {
   root: "",
   browse: "browse",
+  movies: "movies",
+  news: "news",
   genreExplore: "genre",
   watch: "watch",
   myList: "my-list",

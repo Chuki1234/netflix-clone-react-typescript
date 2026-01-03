@@ -10,11 +10,12 @@ export interface PortalDataConsumerProps {
   miniModalMediaData: Movie | null;
 }
 
-export const [usePortal, Provider] =
-  createSafeContext<PortalConsumerProps["setPortal"]>();
+export const [usePortal, Provider] = createSafeContext<PortalConsumerProps["setPortal"]>(() => {});
 
-export const [usePortalData, PortalDataProvider] =
-  createSafeContext<PortalDataConsumerProps>();
+export const [usePortalData, PortalDataProvider] = createSafeContext<PortalDataConsumerProps>({
+  anchorElement: null,
+  miniModalMediaData: null,
+});
 
 export default function PortalProvider({ children }: { children: ReactNode }) {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);

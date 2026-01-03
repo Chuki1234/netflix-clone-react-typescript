@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { Saga } from "../models/index.js";
 import { createNotificationForAllAdmins } from "../utils/createNotification.js";
 
 // @desc    Process new subscription payment
@@ -18,56 +19,32 @@ export const processPayment = async (req, res) => {
       return res.status(400).json({ message: "Invalid plan ID" });
     }
 
-    // Find user
+    // Ensure user exists
     const user = await User.findById(req.user._id);
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Calculate expiration date (30 days from now)
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 30);
-
-    // Update user subscription
-    user.subscriptionPlan = planId;
-    user.subscriptionStatus = "pending";
-    user.paymentStatus = "pending";
-    user.paymentDate = new Date();
-    user.expiresAt = expiresAt;
-
-    await user.save();
-
-    // Notify all admins about new payment pending approval
-    try {
-      await createNotificationForAllAdmins({
-        type: "payment_pending",
-        title: "New Payment Pending Approval",
-        message: `${user.name} (${user.email}) has submitted a payment for ${planId} plan. Please review and approve.`,
-        metadata: {
-          userId: user._id,
-          userName: user.name,
-          userEmail: user.email,
-          subscriptionPlan: planId,
-          paymentDate: user.paymentDate,
-        },
-      });
-      console.log(`✅ Notification sent to admins for user ${user.email} payment`);
-    } catch (notificationError) {
-      console.error("⚠️ Failed to send notification to admins:", notificationError);
-      // Don't fail the request if notification fails
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Payment received. Waiting for admin approval.",
-      subscription: {
-        plan: user.subscriptionPlan,
-        status: user.subscriptionStatus,
-        paymentStatus: user.paymentStatus,
-        paymentDate: user.paymentDate,
-        expiresAt: user.expiresAt,
+    // Create a Saga to orchestrate the payment flow asynchronously
+    const saga = await Saga.create({
+      sagaType: "subscription_activation",
+      status: "PENDING",
+      context: {
+        userId: user._id.toString(),
+        planId,
+        paymentMethod,
+        paymentInfo,
       },
+      steps: [
+        { name: "mark_pending", status: "PENDING" },
+        { name: "notify_admins", status: "PENDING" },
+      ],
+    });
+
+    res.status(202).json({
+      success: true,
+      message: "Payment received. Processing via saga. Waiting for admin approval.",
+      sagaId: saga._id,
     });
   } catch (error) {
     console.error("Process payment error:", error);

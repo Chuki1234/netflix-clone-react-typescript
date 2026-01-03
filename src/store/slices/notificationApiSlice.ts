@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BACKEND_API_URL } from "src/constant";
 
 const getToken = () => {
-  return sessionStorage.getItem("token");
+  return sessionStorage.getItem("token") || localStorage.getItem("token");
 };
 
 export interface Notification {

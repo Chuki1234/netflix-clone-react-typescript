@@ -75,8 +75,11 @@ export default function NotificationMenu({ authenticated }: NotificationMenuProp
     // Close the menu
     handleClose();
 
-    // Navigate to admin accounts page if user is admin
-    // Only route notifications that are relevant to admin (user_registered, payment_pending)
+    // Navigate based on notification type
+    if (notification.type === "movie_updated") {
+      navigate(`/${MAIN_PATH.news}`);
+      return;
+    }
     if (user?.role === "admin" && (notification.type === "user_registered" || notification.type === "payment_pending")) {
       navigate(`/${MAIN_PATH.adminDashboard}/accounts`);
     }

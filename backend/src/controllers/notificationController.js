@@ -41,6 +41,9 @@ export const getNotifications = async (req, res) => {
 // @access  Private
 export const getUnreadCount = async (req, res) => {
   try {
+    if (!req.user?._id) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
     const count = await Notification.countDocuments({
       userId: req.user._id,
       read: false,

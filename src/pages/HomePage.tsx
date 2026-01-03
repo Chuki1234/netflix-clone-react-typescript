@@ -1,6 +1,9 @@
 import Stack from "@mui/material/Stack";
-  import Box from "@mui/material/Box";
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { useEffect, useMemo, useRef } from "react";
+import { useLocation } from "react-router-dom";
+
 import { COMMON_TITLES, TMDB_V3_API_KEY } from "src/constant";
 import HeroSection from "src/components/HeroSection";
 import { genreSliceEndpoints, useGetGenresQuery } from "src/store/slices/genre";
@@ -9,6 +12,7 @@ import { CustomGenre, Genre } from "src/types/Genre";
 import SliderRowForGenre from "src/components/VideoSlider";
 import MainLoadingScreen from "src/components/MainLoadingScreen";
 import store from "src/store";
+import { useGetPublicMoviesQuery } from "src/store/slices/publicMovies";
 
 export async function loader() {
   await store.dispatch(
@@ -18,6 +22,25 @@ export async function loader() {
 }
 export function Component() {
   const { data: genres, isSuccess, isLoading, isError, error } = useGetGenresQuery(MEDIA_TYPE.Movie);
+  const { data: publicMovies } = useGetPublicMoviesQuery({ limit: 12 });
+  const location = useLocation();
+  const upcomingRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (location.hash === "#upcoming" && upcomingRef.current) {
+      upcomingRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location]);
+
+  const taggedMovies = useMemo(() => {
+    if (!publicMovies) return [];
+    const now = Date.now();
+    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+    return publicMovies.map((m) => ({
+      ...m,
+      isNew: m.createdAt ? now - new Date(m.createdAt).getTime() <= SEVEN_DAYS : true,
+    }));
+  }, [publicMovies]);
 
   // Check if API key is configured
   if (!TMDB_V3_API_KEY) {
@@ -80,6 +103,9 @@ export function Component() {
     return (
       <Stack spacing={2}>
         <HeroSection mediaType={MEDIA_TYPE.Movie} />
+        <Box ref={upcomingRef}>
+          {/* Upcoming Movies section removed */}
+        </Box>
         {[...COMMON_TITLES, ...genres].map((genre: Genre | CustomGenre) => (
           <SliderRowForGenre
             key={genre.id || genre.name}

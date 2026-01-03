@@ -64,6 +64,7 @@ export function Component() {
             paymentStatus: result.paymentStatus,
           },
           token: result.token,
+          rememberMe,
         })
       );
       

@@ -45,8 +45,19 @@ const discoverSlice = createSlice({
           mediaType,
           itemKey,
         } = action.payload;
+        // Ensure containers exist
+        if (!state[mediaType]) {
+          state[mediaType] = {};
+        }
+        if (!state[mediaType][itemKey]) {
+          state[mediaType][itemKey] = {
+            ...initialItemState,
+            results: [],
+          };
+        }
         state[mediaType][itemKey].page = page;
-        state[mediaType][itemKey].results.push(...results);
+        // Replace instead of push to avoid duplication after refresh
+        state[mediaType][itemKey].results = results;
         state[mediaType][itemKey].total_pages = total_pages;
         state[mediaType][itemKey].total_results = total_results;
       }
@@ -121,6 +132,12 @@ const extendedApi = tmdbApi.injectEndpoints({
         params: { api_key: TMDB_V3_API_KEY },
       }),
     }),
+    searchMovies: build.query<PaginatedMovieResult, { query: string; page: number }>({
+      query: ({ query, page }) => ({
+        url: `/search/movie`,
+        params: { api_key: TMDB_V3_API_KEY, query, page },
+      }),
+    }),
   }),
 });
 
@@ -133,4 +150,6 @@ export const {
   useLazyGetAppendedVideosQuery,
   useGetSimilarVideosQuery,
   useLazyGetSimilarVideosQuery,
+  useSearchMoviesQuery,
+  useLazySearchMoviesQuery,
 } = extendedApi;

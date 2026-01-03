@@ -158,18 +158,18 @@ const MainHeader = () => {
             My List
           </NetflixNavigationLink>
           <NetflixNavigationLink
-            to="/browse"
+            to="/movies"
             variant="subtitle1"
             onClick={handleCloseNavMenu}
           >
             Movies
           </NetflixNavigationLink>
           <NetflixNavigationLink
-            to="/browse"
+            to="/news"
             variant="subtitle1"
             onClick={handleCloseNavMenu}
           >
-            Tv Shows
+            News
           </NetflixNavigationLink>
         </Stack>
 

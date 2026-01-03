@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { tmdbApi } from "./slices/apiSlice";
+import { tmdbApi, apiSlice } from "./slices/apiSlice";
 import { authApi } from "./slices/authApiSlice";
 import { paymentApi } from "./slices/paymentApiSlice";
 import { adminApi } from "./slices/adminApiSlice";
@@ -13,6 +13,7 @@ const store = configureStore({
     discover: discoverReducer,
     userPreferences: userPreferencesReducer,
     auth: authReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer,
     [tmdbApi.reducerPath]: tmdbApi.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
@@ -21,6 +22,7 @@ const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
+      apiSlice.middleware,
       tmdbApi.middleware,
       authApi.middleware,
       paymentApi.middleware,

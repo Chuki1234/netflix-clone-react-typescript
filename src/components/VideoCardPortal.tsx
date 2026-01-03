@@ -4,6 +4,8 @@ import Stack from "@mui/material/Stack";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
+import LinearProgress from "@mui/material/LinearProgress";
+import Box from "@mui/material/Box";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
@@ -28,6 +30,8 @@ import { useAppDispatch, useAppSelector } from "src/hooks/redux";
 import { toggleLike, toggleMyList, selectIsLiked, selectIsInMyList } from "src/store/slices/userPreferences";
 import { useSubscriptionCheck } from "src/hooks/useSubscriptionCheck";
 import SubscriptionAlert from "./SubscriptionAlert";
+import { useGetWatchHistoryByMovieQuery } from "src/store/slices/watchHistoryApi";
+import { selectCurrentUser } from "src/store/slices/authSlice";
 
 interface VideoCardModalProps {
   video: Movie;
@@ -48,6 +52,12 @@ export default function VideoCardModal({
   const setPortal = usePortal();
   const rect = anchorElement.getBoundingClientRect();
   const { setDetailType } = useDetailModal();
+  const currentUser = useAppSelector(selectCurrentUser);
+
+  const { data: watchHistory } = useGetWatchHistoryByMovieQuery(
+    { movieId: video.id, mediaType: MEDIA_TYPE.Movie },
+    { skip: !currentUser?._id }
+  );
 
   const isLiked = useAppSelector((state) =>
     selectIsLiked(state, video.id, MEDIA_TYPE.Movie)
@@ -181,6 +191,42 @@ export default function VideoCardModal({
                 .filter((genre) => video.genre_ids.includes(genre.id))
                 .map((genre) => genre.name)}
             />
+          )}
+          {watchHistory && watchHistory.duration > 0 && (
+            <Stack spacing={0.5} sx={{ mt: 1 }}>
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                }}
+              >
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min(
+                    100,
+                    Math.max(0, (watchHistory.progress / watchHistory.duration) * 100)
+                  )}
+                  sx={{
+                    height: 4,
+                    borderRadius: 4,
+                    bgcolor: "#2b2b2b",
+                    "& .MuiLinearProgress-bar": {
+                      bgcolor: "#e50914",
+                    },
+                  }}
+                />
+              </Box>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="body2" color="text.secondary">
+                  Watching
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {`${Math.floor(watchHistory.progress / 60)} / ${Math.floor(
+                    watchHistory.duration / 60
+                  )} ph`}
+                </Typography>
+              </Stack>
+            </Stack>
           )}
         </Stack>
       </CardContent>

@@ -13,6 +13,7 @@ import palette from "./theme/palette";
 import router from "./routes";
 import MainLoadingScreen from "./components/MainLoadingScreen";
 import StorageSyncProvider from "./components/StorageSyncProvider";
+import AuthRefresher from "./components/AuthRefresher";
 
 store.dispatch(extendedApi.endpoints.getConfiguration.initiate(undefined));
 
@@ -24,6 +25,7 @@ root.render(
     <React.StrictMode>
       <ThemeProvider theme={createTheme({ palette })}>
         <StorageSyncProvider>
+          <AuthRefresher />
           <RouterProvider
             router={router}
             fallbackElement={<MainLoadingScreen />}

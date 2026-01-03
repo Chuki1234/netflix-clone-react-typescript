@@ -63,8 +63,28 @@ export interface UpdateSubscriptionResponse {
 }
 
 const getToken = () => {
-  return sessionStorage.getItem("token");
+  return sessionStorage.getItem("token") || localStorage.getItem("token");
 };
+
+export interface AdminMoviePayload {
+  tmdbId?: number;
+  title: string;
+  overview?: string;
+  posterPath?: string;
+  backdropPath?: string;
+  mediaType?: "movie" | "tv";
+  releaseDate?: string;
+  genres?: { id: number; name: string }[];
+  voteAverage?: number;
+  voteCount?: number;
+  runtime?: number;
+}
+
+export interface AdminMovie extends AdminMoviePayload {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export const adminApi = createApi({
   reducerPath: "adminApi",
@@ -78,7 +98,7 @@ export const adminApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["AdminUser", "AdminStats", "PendingPayments"],
+  tagTypes: ["AdminUser", "AdminStats", "PendingPayments", "AdminMovies"],
   endpoints: (builder) => ({
     adminLogin: builder.mutation<AdminLoginResponse, AdminLoginRequest>({
       query: (credentials) => ({
@@ -120,6 +140,51 @@ export const adminApi = createApi({
       query: () => "/admin/payments/pending",
       providesTags: ["PendingPayments"],
     }),
+    getAdminMovies: builder.query<
+      { items: AdminMovie[]; pagination: { page: number; pages: number; total: number; limit: number } },
+      { page?: number; limit?: number; search?: string }
+    >({
+      query: ({ page = 1, limit = 20, search } = {}) => ({
+        url: "/admin/movies",
+        params: { page, limit, search },
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.items.map(({ _id }) => ({ type: "AdminMovies" as const, id: _id })),
+              { type: "AdminMovies" as const, id: "PARTIAL-LIST" },
+            ]
+          : [{ type: "AdminMovies" as const, id: "PARTIAL-LIST" }],
+    }),
+    createAdminMovie: builder.mutation<AdminMovie, AdminMoviePayload>({
+      query: (body) => ({
+        url: "/admin/movies",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "AdminMovies", id: "PARTIAL-LIST" }],
+    }),
+    updateAdminMovie: builder.mutation<AdminMovie, { id: string; data: Partial<AdminMoviePayload> }>({
+      query: ({ id, data }) => ({
+        url: `/admin/movies/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, _error, arg) => [
+        { type: "AdminMovies", id: arg.id },
+        { type: "AdminMovies", id: "PARTIAL-LIST" },
+      ],
+    }),
+    deleteAdminMovie: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({
+        url: `/admin/movies/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "AdminMovies", id },
+        { type: "AdminMovies", id: "PARTIAL-LIST" },
+      ],
+    }),
   }),
 });
 
@@ -130,5 +195,9 @@ export const {
   useGetUserByIdQuery,
   useUpdateUserSubscriptionMutation,
   useGetPendingPaymentsQuery,
+  useGetAdminMoviesQuery,
+  useCreateAdminMovieMutation,
+  useUpdateAdminMovieMutation,
+  useDeleteAdminMovieMutation,
 } = adminApi;
 
